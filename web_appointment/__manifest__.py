@@ -3,6 +3,8 @@
     "version": "1.0",
     "category": "Website",
     "summary": "Client can book appointment from website",
+    "author": "Fatma Zahra Lakehal Senior",
+
     "depends": [
         "website",
         "hr",
