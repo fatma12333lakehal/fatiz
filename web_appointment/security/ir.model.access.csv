@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_website_appointment_user,website appointment user,model_website_appointment,,1,1,1,1
+
+access_sales_engineer_availability_user,sales engineer availability user,model_sales_engineer_availability,,1,1,1,1
+access_viewing_project_user,viewing project user,model_viewing_project,base.group_user,1,1,1,1

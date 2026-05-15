@@ -1,0 +1,85 @@
+<odoo>
+
+    <!-- ========================= -->
+    <!-- TREE VIEW -->
+    <!-- ========================= -->
+    <record id="view_viewing_project_tree" model="ir.ui.view">
+        <field name="name">viewing.project.list</field>
+        <field name="model">viewing.project</field>
+        <field name="arch" type="xml">
+            <list string="Viewing Projects">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="employee_id"/>
+                <field name="location"/>
+                <field name="stage"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ========================= -->
+    <!-- FORM VIEW -->
+    <!-- ========================= -->
+    <record id="view_viewing_project_form" model="ir.ui.view">
+        <field name="name">viewing.project.form</field>
+        <field name="model">viewing.project</field>
+        <field name="arch" type="xml">
+            <form string="Viewing Project">
+
+                <sheet>
+
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="partner_id"/>
+                            <field name="employee_id"/>
+                        </group>
+
+                        <group>
+                            <field name="appointment_id"/>
+                            <field name="location"/>
+                            <field name="stage"/>
+                        </group>
+                    </group>
+
+                    <notebook>
+                        <page string="Notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+
+                </sheet>
+
+                <chatter/>
+
+            </form>
+        </field>
+    </record>
+
+    <!-- ========================= -->
+    <!-- SEARCH VIEW -->
+    <!-- ========================= -->
+
+    <!-- ========================= -->
+    <!-- ACTION -->
+    <!-- ========================= -->
+    <record id="action_viewing_project" model="ir.actions.act_window">
+        <field name="name">Viewing Projects</field>
+        <field name="res_model">viewing.project</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ========================= -->
+    <!-- MENU -->
+    <!-- ========================= -->
+    <menuitem id="menu_viewing_root"
+              name="Viewing"
+              sequence="10"/>
+
+    <menuitem id="menu_viewing_project"
+              name="Projects"
+              parent="appointment_root_menu"
+              action="action_viewing_project"
+              sequence="50"/>
+
+</odoo>

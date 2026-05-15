@@ -1,0 +1,82 @@
+<odoo>
+
+    <!-- ========================================= -->
+    <!-- TREE VIEW -->
+    <!-- ========================================= -->
+
+    <record id="view_sales_engineer_availability_tree" model="ir.ui.view">
+        <field name="name">sales.engineer.availability.list</field>
+        <field name="model">sales.engineer.availability</field>
+        <field name="arch" type="xml">
+
+            <list string="Engineer Availability">
+
+                <field name="employee_id"/>
+                <field name="weekday"/>
+                <field name="hour_from"/>
+                <field name="hour_to"/>
+                <field name="active"/>
+                <field name="location_id"/>
+
+            </list>
+
+        </field>
+    </record>
+
+    <!-- ========================================= -->
+    <!-- FORM VIEW -->
+    <!-- ========================================= -->
+
+    <record id="view_sales_engineer_availability_form" model="ir.ui.view">
+        <field name="name">sales.engineer.availability.form</field>
+        <field name="model">sales.engineer.availability</field>
+        <field name="arch" type="xml">
+
+            <form string="Availability">
+
+                <sheet>
+
+                    <group>
+
+                        <group>
+                            <field name="employee_id"/>
+                            <field name="weekday"/>
+                        </group>
+
+                        <group>
+                            <field name="hour_from"/>
+                            <field name="hour_to"/>
+                            <field name="active"/>
+                            <field name="location_id"/>
+                        </group>
+
+                    </group>
+
+                </sheet>
+
+            </form>
+
+        </field>
+    </record>
+
+    <!-- ========================================= -->
+    <!-- ACTION -->
+    <!-- ========================================= -->
+
+    <record id="action_sales_engineer_availability" model="ir.actions.act_window">
+        <field name="name">Engineer Availability</field>
+        <field name="res_model">sales.engineer.availability</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ========================================= -->
+    <!-- MENU -->
+    <!-- ========================================= -->
+
+    <menuitem id="menu_sales_engineer_availability"
+              name="Availability"
+              parent="appointment_root_menu"
+              action="action_sales_engineer_availability"
+              sequence="20"/>
+
+</odoo>

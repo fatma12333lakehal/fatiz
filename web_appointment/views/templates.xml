@@ -1,0 +1,386 @@
+<odoo>
+
+    <!-- ===================================================== -->
+    <!-- ACTION -->
+    <!-- ===================================================== -->
+
+    <record id="action_appointment" model="ir.actions.act_url">
+        <field name="name">Appointments</field>
+        <field name="url">/appointment</field>
+        <field name="target">self</field>
+    </record>
+
+    <!-- ===================================================== -->
+    <!-- MENU -->
+    <!-- ===================================================== -->
+
+    <menuitem id="menu_appointment_root"
+              name="Appointments"
+              sequence="10"/>
+
+    <menuitem id="menu_appointment"
+              parent="menu_appointment_root"
+              action="action_appointment"
+              sequence="20"/>
+
+    <!-- ===================================================== -->
+    <!-- TEMPLATE -->
+    <!-- ===================================================== -->
+
+    <template id="appointment_template" name="Appointment Booking">
+
+        <t t-call="website.layout">
+
+            <!-- ================= STYLE ================= -->
+            <style>
+
+                body {
+                    background: #f4f6f9;
+                }
+
+                .calendar-header,
+                .calendar-body {
+                    display: grid;
+                    grid-template-columns: 80px repeat(7, 1fr);
+                    background: white;
+                }
+
+                .calendar-header {
+                    font-weight: bold;
+                    text-align: center;
+                    border-bottom: 1px solid #ddd;
+                }
+
+                .time-cell {
+                    height: 60px;
+                    border-bottom: 1px solid #eee;
+                    text-align: right;
+                    font-size: 12px;
+                    padding: 5px;
+                    color: #666;
+                }
+
+                .slot {
+                    height: 60px;
+                    border-bottom: 1px solid #eee;
+                    position: relative;
+                    cursor: pointer;
+                    transition: 0.2s;
+                }
+
+                .slot.available {
+                    background: #ecfdf3;
+                }
+
+                .slot.booked {
+                    background: #f8d7da;
+                    cursor: not-allowed;
+                    opacity: 0.6;
+                }
+
+                .slot:hover {
+                    background: #e8f0fe;
+                }
+
+                .event {
+                    position: absolute;
+                    top: 5px;
+                    left: 5px;
+                    right: 5px;
+                    background: #0d6efd;
+                    color: white;
+                    padding: 3px;
+                    font-size: 11px;
+                    border-radius: 4px;
+                }
+
+                .selected-slot {
+                    background: #0d6efd !important;
+                    color: white !important;
+                }
+
+                .booking-panel {
+                    position: fixed;
+                    right: 20px;
+                    top: 100px;
+                    width: 320px;
+                    background: white;
+                    padding: 15px;
+                    border-radius: 10px;
+                    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+                }
+
+                .btn-book {
+                    width: 100%;
+                    background: #0d6efd;
+                    color: white;
+                    border: none;
+                    padding: 10px;
+                    border-radius: 6px;
+                }
+                .add-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    font-size: 30px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    cursor: pointer;
+    z-index: 1000;
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+}
+
+.modal-box {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 420px;
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    z-index: 1001;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal-box input,
+.modal-box select {
+    margin-bottom: 10px;
+}
+
+            </style>
+
+            <!-- ================= CONTAINER ================= -->
+            <div class="container-fluid">
+
+                <!-- ENGINEER FILTER -->
+                <form method="GET" action="/appointment">
+                    <select name="employee_id"
+                            onchange="this.form.submit()"
+                            class="form-select mb-3">
+
+                        <option value="">All Sales Engineers</option>
+
+                        <t t-foreach="employees" t-as="e">
+                            <option t-att-value="e.id"
+                                    t-att-selected="selected_employee == e.id">
+                                <t t-esc="e.name"/>
+                            </option>
+                        </t>
+
+                    </select>
+                </form>
+
+                <!-- HEADER -->
+                <div class="calendar-header">
+                    <div></div>
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+                </div>
+
+                <!-- BODY -->
+                <div class="calendar-body">
+
+                    <!-- TIME COLUMN -->
+                    <div>
+                        <t t-foreach="range(8, 18)" t-as="h">
+                            <div class="time-cell">
+                                <t t-esc="h"/>:00
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- DAYS -->
+                    <t t-foreach="range(7)" t-as="d">
+
+                        <div>
+
+                            <t t-foreach="range(8, 18)" t-as="h">
+
+                                <!-- SLOT -->
+                                <div t-att-class="'slot booked' if any(s['weekday']==d and s['hour']==h and s['booked'] for s in slots) else 'slot available'"
+                                     t-att-data-day="d"
+                                     t-att-data-hour="h">
+
+                                    <!-- EVENTS -->
+                                    <t t-foreach="events" t-as="e">
+
+                                        <t t-if="e['weekday'] == d and e['time'] == h">
+
+                                            <div class="event">
+                                                <t t-esc="e['employee']"/>
+                                                <br/>
+                                                <small>
+                                                    <t t-esc="e['partner']"/>
+                                                </small>
+                                            </div>
+
+                                        </t>
+
+                                    </t>
+
+                                </div>
+
+                            </t>
+
+                        </div>
+
+                    </t>
+
+                </div>
+
+                <!-- BOOKING PANEL -->
+                <!-- PLUS BUTTON -->
+<button class="add-btn" id="openForm">+</button>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay"></div>
+
+<!-- POPUP FORM -->
+<div class="modal-box" id="modal">
+
+    <h5>Book Appointment</h5>
+
+    <input id="name" class="form-control mb-2" placeholder="Name"/>
+    <input id="email" class="form-control mb-2" placeholder="Email"/>
+    <input id="phone" class="form-control mb-2" placeholder="Phone"/>
+    <input id="location" class="form-control mb-2" placeholder="Location"/>
+
+    <select id="employee_id" class="form-select mb-2">
+
+        <option value="">Select Engineer</option>
+
+        <t t-foreach="employees" t-as="e">
+            <option t-att-value="e.id">
+                <t t-esc="e.name"/>
+            </option>
+        </t>
+
+    </select>
+
+    <div class="alert alert-info">
+        Selected: <span id="selected_slot">None</span>
+    </div>
+
+    <button class="btn btn-primary w-100" id="bookBtn">
+        Confirm Booking
+    </button>
+
+</div>
+
+            </div>
+
+            <!-- ================= SCRIPT ================= -->
+            <script>
+
+                let selectedDay = null;
+                let selectedHour = null;
+
+                document.querySelectorAll('.slot').forEach(el => {
+
+                    el.onclick = function () {
+
+                        if (this.classList.contains('booked')) return;
+
+                        document.querySelectorAll('.slot')
+                            .forEach(s => s.classList.remove('selected-slot'));
+
+                        this.classList.add('selected-slot');
+
+                        selectedDay = this.dataset.day;
+                        selectedHour = this.dataset.hour;
+
+                        document.getElementById('selected_slot').innerText =
+                            `Day ${selectedDay} - ${selectedHour}:00`;
+
+                    };
+
+                });
+
+
+                document.getElementById('bookBtn').onclick = async function () {
+
+                    if (!selectedHour) {
+                        alert("Please select a slot");
+                        return;
+                    }
+
+                    const res = await fetch('/appointment/submit', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            params: {
+                                name: document.getElementById('name').value,
+                                email: document.getElementById('email').value,
+                                phone: document.getElementById('phone').value,
+                                location: document.getElementById('location').value,
+                                employee_id: document.getElementById('employee_id').value,
+                                date: new Date().toISOString().split('T')[0],
+                                time: selectedHour,
+                                duration: 1
+                            }
+                        })
+                    });
+
+
+                    const data = await res.json();
+
+                    if (data) {
+    if (data.result) {
+        if (data.result.success) {
+            alert(data.result.message);
+            window.location.reload();
+        } else {
+            alert("Booking failed");
+        }
+    } else {
+        alert("Booking failed");
+    }
+} else {
+    alert("Booking failed");
+}
+
+                };
+                function openModal() {
+    document.getElementById('modal').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+}
+
+function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+}
+
+document.getElementById('openForm').onclick = openModal;
+document.getElementById('overlay').onclick = closeModal;
+
+            </script>
+
+        </t>
+
+    </template>
+
+</odoo>
