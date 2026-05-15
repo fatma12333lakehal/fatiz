@@ -15,8 +15,8 @@
     <!-- ===================================================== -->
 
     <menuitem id="menu_appointment_root"
-              name="Appointments"
-              sequence="10"/>
+              name="Appointments_website"
+              sequence="10" web_icon="web_appointment,static/description/icon.png"/>
 
     <menuitem id="menu_appointment"
               parent="menu_appointment_root"
